@@ -1,9 +1,10 @@
 const User = require("../models/user.model");
-const bcryptjs = require('bcryptjs')
+const bcryptjs = require('bcryptjs');
+const { errorHandler } = require("../utils/error");
 
 
 //  create user--------------
-exports.signup = async(req,res)=>{
+exports.signup = async(req,res,next)=>{
     const { username, email, password} = req.body 
     const hashedPassword =await bcryptjs.hash(password,10);
 
@@ -14,10 +15,7 @@ exports.signup = async(req,res)=>{
             user : user 
           })
     } catch (err) {
-        res.status(404).json({
-            message : "user not created",
-            error : err
-        })
+       next(err);
     }
     
     
