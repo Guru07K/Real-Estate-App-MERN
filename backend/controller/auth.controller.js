@@ -1,7 +1,7 @@
 const User = require("../models/user.model");
 const bcryptjs = require('bcryptjs');
-const errorHandler = require("../utils/error");
 const jwt = require('jsonwebtoken');
+const ErrorHandler = require("../utils/error");
 
 
 //  create user--------------
@@ -17,6 +17,7 @@ exports.signup = async(req,res,next)=>{
           })
     } catch (err) {
        next(err);
+       
     }
     
     
@@ -25,13 +26,14 @@ exports.signup = async(req,res,next)=>{
 // Signin user
 exports.signin = async (req,res,next) =>{
     const {email, password} = req.body;
-    // try {
+    try {
         const user = await User.findOne({email});
-        if(!user) return next(errorHandler(404,'user not found'));
+        if(!user) return next(new ErrorHandler(404,'user not found'));
 
-        const validPassword = bcryptjs.compare(password,user.password)
-        if(!validPassword) return next(errorHandler(404,'Invalid password'));
-
+        const validPassword = await bcryptjs.compare(password,user.password)
+        if(!validPassword){
+            return next(new ErrorHandler(404,'Invalid password'));
+        } 
         const token = jwt.sign({id : user._id},process.env.JWT_SECRET_KEY)
 
         res.cookie('acces-token',token,{httpOnly:true})
@@ -41,9 +43,9 @@ exports.signin = async (req,res,next) =>{
                user : user
            })
 
-    // } catch (error) {
-    //     next(error)
-    // }
+    } catch (error) {
+        next(error)
+    }
 }
 
 
