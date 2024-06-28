@@ -49,11 +49,27 @@ exports.signin = async (req,res,next) =>{
 }
 
 
-// get all user------------  
-exports.getUser = async (req,res)=>{
-    const user = await User.find();
-    res.status(200).json({
-        message : "user fetched successfully",
-        user : user
-    })
+exports.google = async(req,res,next) => {
+    try {
+        const user = await User.findOne({email: req.body.email});
+        if(user){
+            const token = jwt.sign({id : user._id},process.env.JWT_SECRET_KEY)
+            const {password:pass,...rest}= user._doc
+            res.cookie('acces-token',token,{httpOnly:true})
+               .status(200)
+               .json(rest)
+        }else{
+            const generatedPassword = Math.random().toString(36).slice(-8) 
+            const hashedPassword = await bcryptjs.hash(generatedPassword,10);
+            const newUser = User.create({username:req.body.username.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-4), email:req.nody.email, password:hashedPassword, avatar:req.body.photo})
+            await newUser.save()
+            const token = jwt.sign({id : newUser._id},process.env.JWT_SECRET_KEY)
+            const {password:pass,...rest}= newUser._doc;
+            res.cookie('acces-token',token,{httpOnly:true})
+               .status(200)
+               .json(rest)
+        }
+    } catch (error) {
+        next(error);
+    }
 }

@@ -13,8 +13,12 @@ const UserShema = new mongoose.Schema({
     password : {
         type : String,
         required : true,
-        
-    }
+    },
+    avatar:{
+        type : String,
+        required : true,
+        default : "https://png.pngtree.com/element_our/20200610/ourmid/pngtree-character-default-avatar-image_2237203.jpg"
+    },
 },{timestamps : true})
 
 const User = mongoose.model('User',UserShema)
